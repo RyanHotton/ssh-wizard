@@ -3,6 +3,26 @@
 # ssh-wizard
 # @author: Ryan Hotton
 
+# # FUNCTIONS
+
+# asks for user's input and only returns a integer
+function getInteger() {
+    local input_text="$1"
+    # optional
+    local default="$2"
+    local user_input=''
+    # source: https://stackoverflow.com/a/4137381/8095383
+    while ! [[ "$user_input" =~ ^[0-9]+$ ]]; do
+        read -p "$input_text" user_input
+        # optional
+        if [[ "$user_input" -eq "" ]]; then
+            user_input="$default"
+        fi
+    done
+    # return integer
+    return $user_input
+}
+
 # clear screen for cleaner output
 clear
 
@@ -44,13 +64,9 @@ for pki in ${!private_keys[@]}; do
 done
 
 ssh_key=-1
+# get user input and verify if the input is valid, if not try again
 while [[ "$ssh_key" -lt 0 ]] || [[ "$ssh_key" -gt "$private_keys_len" ]]; do
-    # get user input and verify if the input is valid, if not try again
-    read -p 'Please select one of the above ssh keys: ' ssh_key
-    # source: https://stackoverflow.com/a/4137381/8095383
-    if ! [[ "$ssh_key" =~ ^[0-9]+$ ]] ; then
-        ssh_key=-1
-    fi
+    getInteger "Please select one of the above ssh keys: "; ssh_key="$?"
 done
 
 # ssh key path
@@ -66,7 +82,7 @@ clear
 
 read -p "Username: " username
 read -p "Hostname or IP Address: " host
-read -p "Port (default $default_port): " port
+getInteger "Port (default $default_port): " "22"; port="$?"
 
 # verify port number, if not apply default
 if ! [[ "$port" =~ ^[0-9]+$ ]] ; then
