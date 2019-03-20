@@ -15,7 +15,7 @@ function getInteger() {
     while ! [[ "$user_input" =~ ^[0-9]+$ ]]; do
         read -p "$input_text" user_input
         # optional
-        if [[ "$user_input" -eq "" ]]; then
+        if [[ -z "$user_input" ]]; then
             user_input="$default"
         fi
     done
@@ -83,11 +83,6 @@ clear
 read -p "Username: " username
 read -p "Hostname or IP Address: " host
 getInteger "Port (default $default_port): " "22"; port="$?"
-
-# verify port number, if not apply default
-if ! [[ "$port" =~ ^[0-9]+$ ]] ; then
-    port=22
-fi
 
 # initialize ssh command
 ssh_command="ssh $username@$host -p $port -i \"$ssh_key_path\""
