@@ -23,8 +23,39 @@ function getInteger() {
     return $user_input
 }
 
+# takes a string and echos a string of the same length with dashes
+function dashDivider() {
+    local text="$1"
+    local dashed_text=""
+    local dash="-"
+    # loop through length of the string
+    for (( i=0; i<${#text}; i++ )); do
+        dashed_text="$dashed_text$dash"
+    done
+    # echo dashes
+    echo "$dashed_text"
+}
+
+function saveSSH() {
+    ssh_path="$1"
+    ssh_cmd="$2"
+    # TODO
+}
+
 # clear screen for cleaner output
 clear
+
+# # DIRECTORY SETUP
+
+# script_dir="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+# config_dir="/config"
+# config_dir="$script_dir$config_dir"
+# saved_ssh="/sshwizard.txt"
+# mkdir -p "$config_dir"
+# config_saved="$config_dir$saved_ssh"
+# if ! [ -f $config_saved ]; then
+#     echo -n > $config_saved
+# fi
 
 # # SSH KEY RETRIEVAL
 
@@ -82,7 +113,7 @@ clear
 
 read -p "Username: " username
 read -p "Hostname or IP Address: " host
-getInteger "Port (default $default_port): " "22"; port="$?"
+getInteger "Port (default $default_port): " "$default_port"; port="$?"
 
 # initialize ssh command
 ssh_command="ssh $username@$host -p $port -i \"$ssh_key_path\""
@@ -90,10 +121,12 @@ ssh_command="ssh $username@$host -p $port -i \"$ssh_key_path\""
 # clear the screen again
 clear
 echo "\$ $ssh_command"
+dashDivider "\$ $ssh_command"
 eval $ssh_command
 
-echo ""
-echo "Thank you for using ssh-wizard."
+thank_you_msg="Thank you for using ssh-wizard."
+dashDivider "$thank_you_msg"
+echo "$thank_you_msg"
 
 # exit script with success
 exit 0

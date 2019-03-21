@@ -1,15 +1,29 @@
 # ssh-wizard
 **Written by Ryan Hotton**
 
-[Description Block]
+***
+### Description
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sem nibh, finibus nec tempor id, egestas eget augue. Etiam ut neque in nibh auctor posuere.
+*This script is still in development.*
 
-[Description Block]
+**ssh-wizard** is a Bash script which aims to be an easy alternative to command line *ssh*. This script is not meant for for the user that would like to have a simplified *ssh* experience, without having to memorize the *ssh* command line structure.
 
-[Steps]
+***
+### Future Updates
+
+- Saving ssh commands for future use.
+- Generating ssh key.
+- Removing cached keys.
+- TBD
+
+***
+### Steps
 
 1. `chmod +x ssh-wizard.sh`
 2. `./ssh-wizard.sh` or `bash ssh-wizard.sh`
 
-[Steps]
+***
+*Your feedback would be appreciated, feel free to help in this endeavour.*
+
+***
+**Important: The goal of this script is to work with native Bash, with as little dependencies. If a user stumbles upon a major dependency issue, please issue an error on GitHub.**
