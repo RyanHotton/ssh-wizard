@@ -105,6 +105,52 @@ function saveSSH() {
     fi
 }
 
+# loads saved ssh commands and let's the user issue them
+function loadSSH() {
+    # declare variables
+    local ssh_path="$1"
+    local ssh_id=0
+    local ssh_cmds=()
+    local ssh_counter=0
+    # read all ssh commands
+    if [ -f $ssh_path ]; then
+        while read -r ssh_line; do
+            ssh_id="${ssh_line%%:*}"
+            ssh_cmds[$ssh_id]="${ssh_line#*:}"
+            ((ssh_counter++))
+        done < "$ssh_path"
+    else
+        # exit function
+        return
+    fi
+    
+    # exit function if there is no ssh commands saved
+    if [[ "$ssh_counter" -eq 0 ]]; then
+        echo "No saved SSH commands found."
+        return
+    fi
+
+    echo "Saved SSH Commands:"
+    # let user choose command
+    for i in ${!ssh_cmds[@]}; do
+        echo "[$i] ${ssh_cmds[i]}"
+    done
+    
+    # only accept an index that exists
+    ssh_id=""
+    while ! [[ -v "ssh_cmds[ssh_id]" ]]; do
+        getInteger "Please select one of the above ssh commands: "; ssh_id="$?"
+    done
+    
+    # clear the screen again
+    clear
+    executeSSH "${ssh_cmds[ssh_id]}"
+
+    # exit script with success
+    exit 0
+
+}
+
 # clear screen for cleaner output
 clear
 
@@ -118,6 +164,13 @@ mkdir -p "$config_dir"
 config_saved="$config_dir$saved_ssh"
 if ! [ -f $config_saved ]; then
     echo -n > $config_saved
+fi
+
+# # LOAD SAVED SSH
+
+getAnswer "Would you like to load a saved SSH command? y/n: " "n"; load_answer="$?"
+if [[ "$load_answer" -eq 1 ]]; then
+    loadSSH "$config_saved"
 fi
 
 # # SSH KEY RETRIEVAL
@@ -154,7 +207,7 @@ private_keys_len=$((private_keys_len-1))
 
 echo "SSH Keys:"
 for pki in ${!private_keys[@]}; do
-  echo [$pki] ${private_keys[pki]##*/}
+  echo "[$pki] ${private_keys[pki]##*/}"
 done
 
 ssh_key=-1
