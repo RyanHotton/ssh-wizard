@@ -1,27 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ssh-wizard
 # @author: Ryan Hotton
 
-# # FUNCTIONS
+# version number
+version_number=0
 
-# asks for user's input and only returns a integer
-function getInteger() {
-    local input_text="$1"
-    # optional
-    local default="$2"
-    local user_input=''
-    # source: https://stackoverflow.com/a/4137381/8095383
-    while ! [[ "$user_input" =~ ^[0-9]+$ ]]; do
-        read -p "$input_text" user_input
-        # optional
-        if [[ -z "$user_input" ]]; then
-            user_input="$default"
-        fi
-    done
-    # return integer
-    return $user_input
-}
+# # FUNCTIONS
 
 # takes a string and echos a string of the same length with dashes
 function dashDivider() {
@@ -36,10 +21,88 @@ function dashDivider() {
     echo "$dashed_text"
 }
 
+# asks for user's input and only returns a integer
+function getInteger() {
+    local input_text="$1"
+    # optional
+    local default="$2"
+    local user_input=""
+    # source: https://stackoverflow.com/a/4137381/8095383
+    while ! [[ "$user_input" =~ ^[0-9]+$ ]]; do
+        read -p "$input_text" user_input
+        # optional
+        if [[ -z "$user_input" ]]; then
+            user_input="$default"
+        fi
+    done
+    # return integer
+    return $user_input
+}
+
+# asks user for yes (y) or no (n)
+function getAnswer() {
+    local input_text="$1"
+    # optional
+    local default="$2"
+    local user_input=""
+    local answer=0
+    while ! [[ "${user_input,,}" == "y" || "${user_input,,}" == "n" ]]; do
+        read -p "$input_text" user_input
+        # optional
+        if [[ -z "$user_input" ]]; then
+            user_input="$default"
+        fi
+    done
+    # convert answer to integer 0 = n, 1 = y
+    if [[ "${user_input,,}" == "n" ]]; then
+        answer=0
+    fi
+    if [[ "${user_input,,}" == "y" ]]; then
+        answer=1
+    fi
+    # return answer as integer 0 = n, 1 = y
+    return $answer
+}
+
+# execute SSH command
+function executeSSH() {
+    local ssh_cmd="$1"
+    echo "\$ $ssh_cmd"
+    dashDivider "\$ $ssh_cmd"
+    eval $ssh_cmd
+
+    local thank_you_msg="Thank you for using ssh-wizard."
+    dashDivider "$thank_you_msg"
+    echo "$thank_you_msg"
+}
+
+# save ssh command if no duplicate exists and assign it an id
 function saveSSH() {
-    ssh_path="$1"
-    ssh_cmd="$2"
-    # TODO
+    # declare variables
+    local ssh_path="$1"
+    local ssh_cmd="$2"
+    local ssh_counter=0
+    local ssh_id=0
+    local duplicate=0
+    # only read file if it exists
+    if [ -f $ssh_path ]; then
+        while read -r ssh_line; do
+            ssh_counter="${ssh_line%%:*}"
+            if [[ "$ssh_cmd" == "${ssh_line#*:}" ]]; then
+                duplicate=1
+                break
+            fi
+            if ((ssh_id < ssh_counter)); then
+                ssh_id=$ssh_counter
+            fi
+        done < "$ssh_path"
+        # make new ssh id, must be an id that doesn't already exist
+        ((ssh_id++))
+    fi
+    # save if no duplicate
+    if [ "$duplicate" -eq 0 ]; then
+        echo "$ssh_id:$ssh_cmd" >> $ssh_path
+    fi
 }
 
 # clear screen for cleaner output
@@ -47,15 +110,15 @@ clear
 
 # # DIRECTORY SETUP
 
-# script_dir="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
-# config_dir="/config"
-# config_dir="$script_dir$config_dir"
-# saved_ssh="/sshwizard.txt"
-# mkdir -p "$config_dir"
-# config_saved="$config_dir$saved_ssh"
-# if ! [ -f $config_saved ]; then
-#     echo -n > $config_saved
-# fi
+script_dir="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
+config_dir="/config"
+config_dir="$script_dir$config_dir"
+saved_ssh="/sshwiz.$version_number.txt"
+mkdir -p "$config_dir"
+config_saved="$config_dir$saved_ssh"
+if ! [ -f $config_saved ]; then
+    echo -n > $config_saved
+fi
 
 # # SSH KEY RETRIEVAL
 
@@ -118,15 +181,15 @@ getInteger "Port (default $default_port): " "$default_port"; port="$?"
 # initialize ssh command
 ssh_command="ssh $username@$host -p $port -i \"$ssh_key_path\""
 
+# save ssh command
+getAnswer "Would you like to save the ssh command for future use? y/n: " "y"; save_answer="$?"
+if [[ "$save_answer" -eq 1 ]]; then
+    saveSSH "$config_saved" "$ssh_command"
+fi
+
 # clear the screen again
 clear
-echo "\$ $ssh_command"
-dashDivider "\$ $ssh_command"
-eval $ssh_command
-
-thank_you_msg="Thank you for using ssh-wizard."
-dashDivider "$thank_you_msg"
-echo "$thank_you_msg"
+executeSSH "$ssh_command"
 
 # exit script with success
 exit 0
