@@ -12,7 +12,7 @@
 ### Future Updates
 
 - Saving ssh commands for future use. [prototype complete]
-- Loading ssh commands.
+- Loading ssh commands. [prototype complete]
 - Generating ssh key.
 - Removing cached keys.
 - Allowing no ssh keys, manual user input for password. (passwords will be done server side, this script will not interact with them)
