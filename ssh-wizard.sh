@@ -168,7 +168,7 @@ fi
 
 # # LOAD SAVED SSH
 
-getAnswer "Would you like to load a saved SSH command? y/n: " "n"; load_answer="$?"
+getAnswer "Would you like to load a saved SSH command? [y/N]: " "n"; load_answer="$?"
 if [[ "$load_answer" -eq 1 ]]; then
     loadSSH "$config_saved"
 fi
@@ -235,7 +235,7 @@ getInteger "Port (default $default_port): " "$default_port"; port="$?"
 ssh_command="ssh $username@$host -p $port -i \"$ssh_key_path\""
 
 # save ssh command
-getAnswer "Would you like to save the ssh command for future use? y/n: " "y"; save_answer="$?"
+getAnswer "Would you like to save the ssh command for future use? [y/N]: " "n"; save_answer="$?"
 if [[ "$save_answer" -eq 1 ]]; then
     saveSSH "$config_saved" "$ssh_command"
 fi
