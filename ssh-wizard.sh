@@ -36,7 +36,7 @@ function getInteger() {
         fi
     done
     # return integer
-    return $user_input
+    return "$user_input"
 }
 
 # asks user for yes (y) or no (n)
@@ -154,6 +154,11 @@ function loadSSH() {
 # clear screen for cleaner output
 clear
 
+# default_port=22
+# getInteger "Port (default $default_port): " "$default_port"; port="$?"
+# echo "$port"
+# exit 0
+
 # # DIRECTORY SETUP
 
 script_dir="$(cd -P -- "$(dirname -- "$0")" && pwd -P)"
@@ -237,6 +242,9 @@ ssh_command="ssh $username@$host -p $port -i \"$ssh_key_path\""
 # save ssh command
 getAnswer "Would you like to save the ssh command for future use? [y/N]: " "n"; save_answer="$?"
 if [[ "$save_answer" -eq 1 ]]; then
+    # issue key regeneration for common errors that involve duplicate entries in known_hosts
+    eval "ssh-keygen -R $host"
+    # save SSH
     saveSSH "$config_saved" "$ssh_command"
 fi
 
